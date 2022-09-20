@@ -58,7 +58,7 @@ Options:
 
 
 
-# Install maven 3.1.0 higher version.
+#### Install maven 3.1.0 higher version.
 ```
 wget https://dlcdn.apache.org/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.tar.gz
 tar xf apache-maven-3.8.6-bin.tar.gz -C /opt
