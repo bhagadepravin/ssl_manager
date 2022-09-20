@@ -55,3 +55,24 @@ Options:
 `mvn clean install -DskipTests`
 - ssl_manager-\<version>-all.tar will be generated under target directory: 
 `target/ssl_manager-1.5.0-all.tar`
+
+
+
+# Install maven 3.1.0 higher version.
+```
+wget https://dlcdn.apache.org/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.tar.gz
+tar xf apache-maven-3.8.6-bin.tar.gz -C /opt
+ln -s /opt/apache-maven-3.8.6 /opt/maven
+cat <<EOF >/etc/profile.d/maven.sh
+export M2_HOME=/opt/maven
+export MAVEN_HOME=/opt/maven
+export PATH=${M2_HOME}/bin:${PATH}
+EOF
+chmod +x /etc/profile.d/maven.sh
+source /etc/profile.d/maven.sh
+mvn -version
+mvn clean install -DskipTests
+cd ssl_manager
+```
+- ssl_manager-\<version>-all.tar will be generated under target directory: 
+untar and run the cmd
