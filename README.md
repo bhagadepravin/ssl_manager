@@ -8,10 +8,9 @@ Steps to run the SSL Manager: (on ambari-server node)
 `./bin/ssl_manager.py --ca --properties=conf/ca.properties --scpKeyFile=<pem> --enable-ssl --service=all --ui=all  --host <ambari-host> --cluster <clustername>`
 
 *Example:*
-```
-cd ssl_manager
-./bin/ssl_manager.py --ca --properties=conf/ca.properties --scpKeyFile=/root/.ssh/id_rsa --enable-ssl --service=all --ui=all --host hdp2005.qe.iti.acceldata.dev --cluster ad_hdp_automation_qe
-```
+`cd ssl_manager`
+`./bin/ssl_manager.py --ca --properties=conf/ca.properties --scpKeyFile=/root/.ssh/id_rsa --enable-ssl --service=all --ui=all --host hdp2005.qe.iti.acceldata.dev --cluster ad_hdp_automation_qe`
+
 - To disable ssl for all services and ui's :
 `./bin/ssl_manager.py --disable-ssl --host <ambari-host> --cluster <clustername> --service all --ui all`
 
