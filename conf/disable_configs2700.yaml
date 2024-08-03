@@ -108,6 +108,9 @@ SPARK3:
     spark.authenticate: false
     spark.authenticate.enableSaslEncryption: false
     spark.ssl.enabled: false
+
+ SPARK3UI:
+  - config_type: spark3-defaults
     spark.ui.https.enabled: false
     
 RANGERPLUGINS:
