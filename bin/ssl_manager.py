@@ -19,10 +19,10 @@ CA_DIR = os.getcwd()
 CA_CONF_DIR = "conf"
 
 #####
-ALL_SERVICES = ['HDFS', 'MRSHUFFLE', 'TEZ', 'HIVE', 'KAFKA', 'RANGER', 'SPARK', 'SPARK2', 'SPARK3']
+ALL_SERVICES = ['HDFS', 'MRSHUFFLE', 'TEZ', 'HIVE', 'KAFKA', 'RANGER', 'SPARK2', 'SPARK3']
 RANGER = ['RANGERADMIN', 'RANGERPLUGINS']
 
-ALL_UI = ['HDFSUI', 'YARN', 'MAPREDUCE2UI', 'HBASE', 'OOZIE', 'AMBARI_INFRA', 'AMBARI_INFRA_SOLR', 'ZEPPELIN' ]
+ALL_UI = ['HDFSUI', 'YARN', 'MAPREDUCE2UI', 'HBASE', 'OOZIE', 'AMBARI_INFRA', 'AMBARI_INFRA_SOLR', 'ATLAS', 'ZEPPELIN']
 AMBARI = ['AMBARIUI']
 #####
 
@@ -47,11 +47,11 @@ CA = \
     Generated a CA and server certificates for all the hosts:
 
     - Copy keystore.jks and truststore.jks files from host directories to respective hosts at /etc/security/certificates
-    - Change the permissions "chmod 755 -R /etc/security/certificates"
+    - Change the permissions "chmod 750 -R /etc/security/certificates"
     - Change the ownership to root:hadoop "chown -R root:hadoop /etc/security/certificates"
     """
 
-# #### wget -O /usr/odp/current/oozie-server/libext/ext-2.2.zip http://tiny.cloudera.com/oozie-ext-2.2
+# #### wget -O /usr/hdp/2.6.4.0-91/oozie/libext/ext-2.2.zip http://tiny.cloudera.com/oozie-ext-2.2
 OOZIE_UI = \
     """
     Select Oozie > Configs, then select Advanced oozie-env and set the following properties (update the <password> below):
@@ -61,7 +61,7 @@ export OOZIE_HTTPS_KEYSTORE_FILE=/etc/security/certificates/keystore.jks
 export OOZIE_HTTPS_KEYSTORE_PASS=<password>
 export OOZIE_CLIENT_OPTS="${OOZIE_CLIENT_OPTS} -Doozie.connection.retry.count=5 -Djavax.net.ssl.trustStore=/etc/security/certificates/truststore.jks -Djavax.net.ssl.trustStorePassword=<password>"
 
-    Login to Oozie server and run: su -l oozie -c "/usr/odp/current/oozie-server/bin/oozie-setup.sh prepare-war -secure"
+    Login to Oozie server and run: su -l oozie -c "/usr/hdp/current/oozie-server/bin/oozie-setup.sh prepare-war -secure"
 
     Note: Make sure Ext JS library is Installed and UI is already enabled.
     """
@@ -74,15 +74,35 @@ export OOZIE_HTTPS_KEYSTORE_FILE=/etc/security/certificates/keystore.jks
 export OOZIE_HTTPS_KEYSTORE_PASS=<password>
 export OOZIE_CLIENT_OPTS="${OOZIE_CLIENT_OPTS} -Doozie.connection.retry.count=5 -Djavax.net.ssl.trustStore=/etc/security/certificates/truststore.jks -Djavax.net.ssl.trustStorePassword=<password>"
 
-    Login to Oozie server and run: su -l oozie -c "/usr/odp/current/oozie-server/bin/oozie-setup.sh prepare-war"
+    Login to Oozie server and run: su -l oozie -c "/usr/hdp/current/oozie-server/bin/oozie-setup.sh prepare-war"
 
     Note: Make sure Ext JS library is Installed and UI is already enabled.
     """
+
+ATLAS_UI = \
+    """
+
+    Login to Atlas metadata server and create a .jceks file as shown below:
+    ----
+    cd /usr/hdp/current/atlas-server/bin
+    ./cputil.py
+    Please enter the full path to the credential provider:jceks://file//etc/security/certificates/ssl.jceks
+    Please enter the password value for keystore.password:<keypass>
+    Please enter the password value for keystore.password again:<keypass>
+    Please enter the password value for truststore.password:<keypass>
+    Please enter the password value for truststore.password again:<keypass>
+    Please enter the password value for password:<keypass>
+    Please enter the password value for password again:<keypass>
+    ----
+
+    """
+
+
 def generate_ca(properties, host, isoverwrite):
     """
     Generated a CA and server certificates for all the provided hosts using Tls toolkit.\
     Please copy the keystore.jks and truststore.jks files under host directory to respective hosts at /etc/security/certificates/
-    Change the permissions to '755' using "chmod 750 /etc/security/certificates/*"
+    Change the permissions to '750' using "chmod 750 /etc/security/certificates/*"
     """
     java_home = read_conf_file(properties, "env", "JAVA_HOME")
     java = java_home+'/bin/java'
@@ -244,8 +264,6 @@ def update_configs_ambari(services, accessor, cluster, conf_file):
                     section[k] = config[0].get("yarn.log.server.url").replace('http:', 'https:').replace('19888', '19890')
                 elif section[k] == "$timelineserver":
                     section[k] = config[0].get("yarn.log.server.web-service.url").replace('http:', 'https:').replace('8188', '8190')
-                elif section[k] == "$oozieserver":
-                    section[k] = config[0].get("oozie.base.url").replace('http:', 'https:').replace('11000', '11443')                    
                 config[0].update({k: section[k]})
             updater = put_configs(config)
             configs.update_config(cluster, config_type, updater, accessor)
@@ -306,7 +324,7 @@ def copy_certs(properties, ssh_key, scpusername, ownership):
         logger.info("Copying certs to host {0}".format(host))
         subprocess.Popen(scp_command, shell=True).communicate()
         logger.info("Changing the permissions..")
-        subprocess.Popen(['ssh', '-o', 'StrictHostKeyChecking=no', '-i', ssh_key, userhost, 'chmod', '-R', '755',
+        subprocess.Popen(['ssh', '-o', 'StrictHostKeyChecking=no', '-i', ssh_key, userhost, 'chmod', '-R', '750',
                           CERT_DIR]).communicate()
         logger.info("Changing the ownership of certificates..")
         subprocess.Popen(['ssh', '-o', 'StrictHostKeyChecking=no', '-i', ssh_key, userhost, 'chown', '-R', ownership,
@@ -430,6 +448,9 @@ def parse_ui(uis, accessor, cluster, conf_file):
                     subprocess.Popen(enable_ambari_ui()).communicate()
                 elif i.upper() == 'OOZIE':
                     logger.info("Configs to update in {0} are: {1}".format(i.upper(), OOZIE_UI))
+                elif i.upper() == 'ATLAS':
+                    update_configs_ambari(i.upper(), accessor, cluster, conf_file)
+                    logger.info("Perform below operation to enable ssl for {0}: {1}".format(i.upper(), ATLAS_UI))
                 else:
                     update_configs_ambari(i.upper(), accessor, cluster, conf_file)
 
@@ -439,6 +460,9 @@ def parse_ui(uis, accessor, cluster, conf_file):
                 logger.info("Enabling SSL for {0} using : {1}".format(u_name, enable_ambari_ui()))
             elif u_name == 'OOZIE':
                 logger.info("Configs to update in {0} are: {1}".format(u_name, OOZIE_UI))
+            elif u_name == 'ATLAS':
+                update_configs_ambari(u_name, accessor, cluster, conf_file)
+                logger.info("Perform below operation to enable ssl for {0}: {1}".format(u_name, ATLAS_UI))
             else:
                 logger.info("Enabling SSL for {0}".format(u_name))
                 update_configs_ambari(u_name, accessor, cluster, conf_file)
@@ -514,7 +538,7 @@ def main():
                                         "Available configs are: HDFS,MRSHUFFLE,TEZ,HIVE,KAFKA,SPARK,SPARK2,RANGERADMIN,RANGERPLUGINS")
     parser.add_option("--ui", dest="ui", help="Comma separated list of UI's for which SSL needs "
                                               "to be enabled. 'all' or comma seperated uis. "
-                                              "Available ui's are: HDFSUI,YARN,MAPREDUCE2UI,HBASE,OOZIE,AMBARI_INFRA,AMBARI_INFRA_SOLR,ZEPPELIN,AMBARI.")
+                                              "Available ui's are: HDFSUI,YARN,MAPREDUCE2UI,HBASE,OOZIE,AMBARI_INFRA,AMBARI_INFRA_SOLR,ATLAS,ZEPPELIN,STORM,AMBARI.")
 
     # Ambari arguments
 
