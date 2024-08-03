@@ -183,14 +183,6 @@ HBASE:
     ssl.server.keystore.password: $keystorepassword
     ssl.server.keystore.location: $keystore
 
-ATLAS:
-  - config_type: application-properties
-    atlas.enableTLS: true
-    keystore.file: $keystore
-    truststore.file: $truststore
-    client.auth.enabled: true
-    cert.stores.credential.provider.path: jceks://file//etc/security/certificates/ssl.jceks
-
 SPARK2:
   - config_type: yarn-site
     spark.authenticate: true
@@ -221,21 +213,30 @@ SPARK2:
     livy.keystore.password: $keystorepassword
     livy.key-password: $keystorepassword
 
-STORM:
-  - config_type: storm-site
-    ui.https.port: 8740
-    ui.https.keystore.type: jks
-    ui.https.keystore.path: $keystore
-    ui.https.keystore.password: $keystorepassword
-    ui.https.key.password: $keystorepassword
-    ui.https.truststore.path: $truststore
-    ui.https.truststore.password: $truststorepassword
-    ui.https.truststore.type: jks
-    drpc.https.port: 3778
-    drpc.https.keystore.type: jks
-    drpc.https.keystore.path: $keystore
-    drpc.https.keystore.password: $keystorepassword
-    drpc.https.key.password: $keystorepassword
-    drpc.https.truststore.path: $truststore
-    drpc.https.truststore.password: $truststorepassword
-    drpc.https.truststore.type: jks
+SPARK3:
+  - config_type: yarn-site
+    spark.authenticate: true
+
+  - config_type: spark3-defaults
+    spark.authenticate: true
+    spark.authenticate.enableSaslEncryption: true
+    spark.ssl.enabled: true
+    spark.ssl.keyPassword: $keystorepassword
+    spark.ssl.keyStore: $keystore
+    spark.ssl.keyStorePassword: $keystorepassword
+    spark.ssl.protocol: TLS
+    spark.ssl.trustStore: $truststore
+    spark.ssl.trustStorePassword: $truststorepassword
+    spark.ui.https.enabled: true
+    spark.ssl.historyServer.port: 18581
+
+OOZIE:
+  - config_type: oozie-site
+    oozie.https.enabled: true
+    oozie.https.port: 11443
+    oozie.https.keystore.file: $keystore
+    oozie.https.keystore.pass: $keystorepassword
+    oozie.https.truststore.file: $truststore
+    oozie.https.truststore.pass: $truststorepassword
+    oozie.base.url: $oozieserver
+   
