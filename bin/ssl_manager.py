@@ -244,6 +244,8 @@ def update_configs_ambari(services, accessor, cluster, conf_file):
                     section[k] = config[0].get("yarn.log.server.url").replace('http:', 'https:').replace('19888', '19890')
                 elif section[k] == "$timelineserver":
                     section[k] = config[0].get("yarn.log.server.web-service.url").replace('http:', 'https:').replace('8188', '8190')
+                elif section[k] == "$oozieserver":
+                    section[k] = config[0].get("oozie.base.url").replace('http:', 'https:').replace('11000', '11443')                    
                 config[0].update({k: section[k]})
             updater = put_configs(config)
             configs.update_config(cluster, config_type, updater, accessor)
