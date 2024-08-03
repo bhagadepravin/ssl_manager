@@ -51,52 +51,7 @@ CA = \
     - Change the ownership to root:hadoop "chown -R root:hadoop /etc/security/certificates"
     """
 
-# #### wget -O /usr/hdp/2.6.4.0-91/oozie/libext/ext-2.2.zip http://tiny.cloudera.com/oozie-ext-2.2
-OOZIE_UI = \
-    """
-    Select Oozie > Configs, then select Advanced oozie-env and set the following properties (update the <password> below):
-
-export OOZIE_HTTPS_PORT=11443
-export OOZIE_HTTPS_KEYSTORE_FILE=/etc/security/certificates/keystore.jks
-export OOZIE_HTTPS_KEYSTORE_PASS=<password>
-export OOZIE_CLIENT_OPTS="${OOZIE_CLIENT_OPTS} -Doozie.connection.retry.count=5 -Djavax.net.ssl.trustStore=/etc/security/certificates/truststore.jks -Djavax.net.ssl.trustStorePassword=<password>"
-
-    Login to Oozie server and run: su -l oozie -c "/usr/hdp/current/oozie-server/bin/oozie-setup.sh prepare-war -secure"
-
-    Note: Make sure Ext JS library is Installed and UI is already enabled.
-    """
-DISABLE_OOZIE_UI = \
-    """
-    Select Oozie > Configs, then select Advanced oozie-env and remove the following properties:
-
-export OOZIE_HTTPS_PORT=11443
-export OOZIE_HTTPS_KEYSTORE_FILE=/etc/security/certificates/keystore.jks
-export OOZIE_HTTPS_KEYSTORE_PASS=<password>
-export OOZIE_CLIENT_OPTS="${OOZIE_CLIENT_OPTS} -Doozie.connection.retry.count=5 -Djavax.net.ssl.trustStore=/etc/security/certificates/truststore.jks -Djavax.net.ssl.trustStorePassword=<password>"
-
-    Login to Oozie server and run: su -l oozie -c "/usr/hdp/current/oozie-server/bin/oozie-setup.sh prepare-war"
-
-    Note: Make sure Ext JS library is Installed and UI is already enabled.
-    """
-
-ATLAS_UI = \
-    """
-
-    Login to Atlas metadata server and create a .jceks file as shown below:
-    ----
-    cd /usr/hdp/current/atlas-server/bin
-    ./cputil.py
-    Please enter the full path to the credential provider:jceks://file//etc/security/certificates/ssl.jceks
-    Please enter the password value for keystore.password:<keypass>
-    Please enter the password value for keystore.password again:<keypass>
-    Please enter the password value for truststore.password:<keypass>
-    Please enter the password value for truststore.password again:<keypass>
-    Please enter the password value for password:<keypass>
-    Please enter the password value for password again:<keypass>
-    ----
-
-    """
-
+# #### wget -O /usr/odp/current/oozie-server/libext/ext-2.2.zip http://tiny.cloudera.com/oozie-ext-2.2
 
 def generate_ca(properties, host, isoverwrite):
     """
