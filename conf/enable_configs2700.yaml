@@ -227,9 +227,12 @@ SPARK3:
     spark.ssl.protocol: TLS
     spark.ssl.trustStore: $truststore
     spark.ssl.trustStorePassword: $truststorepassword
-    spark.ui.https.enabled: true
     spark.ssl.historyServer.port: 18581
 
+SPARK3UI:
+  - config_type: spark3-defaults
+    spark.ui.https.enabled: true
+    
 OOZIE:
   - config_type: oozie-site
     oozie.https.enabled: true
