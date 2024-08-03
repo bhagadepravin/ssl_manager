@@ -47,7 +47,7 @@ CA = \
     Generated a CA and server certificates for all the hosts:
 
     - Copy keystore.jks and truststore.jks files from host directories to respective hosts at /etc/security/certificates
-    - Change the permissions "chmod 750 -R /etc/security/certificates"
+    - Change the permissions "chmod 755 -R /etc/security/certificates"
     - Change the ownership to root:hadoop "chown -R root:hadoop /etc/security/certificates"
     """
 
@@ -82,7 +82,7 @@ def generate_ca(properties, host, isoverwrite):
     """
     Generated a CA and server certificates for all the provided hosts using Tls toolkit.\
     Please copy the keystore.jks and truststore.jks files under host directory to respective hosts at /etc/security/certificates/
-    Change the permissions to '750' using "chmod 750 /etc/security/certificates/*"
+    Change the permissions to '755' using "chmod 750 /etc/security/certificates/*"
     """
     java_home = read_conf_file(properties, "env", "JAVA_HOME")
     java = java_home+'/bin/java'
@@ -306,7 +306,7 @@ def copy_certs(properties, ssh_key, scpusername, ownership):
         logger.info("Copying certs to host {0}".format(host))
         subprocess.Popen(scp_command, shell=True).communicate()
         logger.info("Changing the permissions..")
-        subprocess.Popen(['ssh', '-o', 'StrictHostKeyChecking=no', '-i', ssh_key, userhost, 'chmod', '-R', '750',
+        subprocess.Popen(['ssh', '-o', 'StrictHostKeyChecking=no', '-i', ssh_key, userhost, 'chmod', '-R', '755',
                           CERT_DIR]).communicate()
         logger.info("Changing the ownership of certificates..")
         subprocess.Popen(['ssh', '-o', 'StrictHostKeyChecking=no', '-i', ssh_key, userhost, 'chown', '-R', ownership,
