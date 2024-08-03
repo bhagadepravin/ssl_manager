@@ -72,10 +72,9 @@ HBASE:
     hbase.ssl.enabled: false
     hadoop.ssl.enabled: false
 
-ATLAS:
-  - config_type: application-properties
-    atlas.enableTLS: false
-    client.auth.enabled: false
+OOZIE:
+  - config_type: oozie-site
+    oozie.https.enabled: false
 
 ZEPPELIN:
   - config_type: zeppelin-config
@@ -100,26 +99,6 @@ SPARK2:
     livy.keystore: $keystore
     livy.keystore.password: $keystorepassword
     livy.key-password: $keystorepassword
-
-STORM:
-  - config_type: storm-site
-    delete: true
-    ui.https.port: 8740
-    ui.https.keystore.type: jks
-    ui.https.keystore.path: $keystore
-    ui.https.keystore.password: $keystorepassword
-    ui.https.key.password: $keystorepassword
-    ui.https.truststore.path: $truststore
-    ui.https.truststore.password: $truststorepassword
-    ui.https.truststore.type: jks
-    drpc.https.port: 3778
-    drpc.https.keystore.type: jks
-    drpc.https.keystore.path: $keystore
-    drpc.https.keystore.password: $keystorepassword
-    drpc.https.key.password: $keystorepassword
-    drpc.https.truststore.path: $truststore
-    drpc.https.truststore.password: $truststorepassword
-    drpc.https.truststore.type: jks
 
 RANGERPLUGINS:
   - config_type: ranger-test-policymgr-ssl
