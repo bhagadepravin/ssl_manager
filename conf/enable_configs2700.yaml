@@ -228,6 +228,7 @@ SPARK3:
     spark.ssl.trustStore: $truststore
     spark.ssl.trustStorePassword: $truststorepassword
     spark.ssl.historyServer.port: 18581
+    spark.ui.https.enabled: true    
 
 SPARK3UI:
   - config_type: spark3-defaults
