@@ -52,6 +52,32 @@ CA = \
     """
 
 # #### wget -O /usr/odp/current/oozie-server/libext/ext-2.2.zip http://tiny.cloudera.com/oozie-ext-2.2
+OOZIE_UI = \
+    """
+    Select Oozie > Configs, then select Advanced oozie-env and set the following properties (update the <password> below):
+
+export OOZIE_HTTPS_PORT=11443
+export OOZIE_HTTPS_KEYSTORE_FILE=/etc/security/certificates/keystore.jks
+export OOZIE_HTTPS_KEYSTORE_PASS=<password>
+export OOZIE_CLIENT_OPTS="${OOZIE_CLIENT_OPTS} -Doozie.connection.retry.count=5 -Djavax.net.ssl.trustStore=/etc/security/certificates/truststore.jks -Djavax.net.ssl.trustStorePassword=<password>"
+
+    Login to Oozie server and run: su -l oozie -c "/usr/hdp/current/oozie-server/bin/oozie-setup.sh prepare-war -secure"
+
+    Note: Make sure Ext JS library is Installed and UI is already enabled.
+    """
+DISABLE_OOZIE_UI = \
+    """
+    Select Oozie > Configs, then select Advanced oozie-env and remove the following properties:
+
+export OOZIE_HTTPS_PORT=11443
+export OOZIE_HTTPS_KEYSTORE_FILE=/etc/security/certificates/keystore.jks
+export OOZIE_HTTPS_KEYSTORE_PASS=<password>
+export OOZIE_CLIENT_OPTS="${OOZIE_CLIENT_OPTS} -Doozie.connection.retry.count=5 -Djavax.net.ssl.trustStore=/etc/security/certificates/truststore.jks -Djavax.net.ssl.trustStorePassword=<password>"
+
+    Login to Oozie server and run: su -l oozie -c "/usr/hdp/current/oozie-server/bin/oozie-setup.sh prepare-war"
+
+    Note: Make sure Ext JS library is Installed and UI is already enabled.
+    """
 
 def generate_ca(properties, host, isoverwrite):
     """
