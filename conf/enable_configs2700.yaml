@@ -74,8 +74,6 @@ KAFKA:
 HIVE:
   - config_type: hive-site
     hive.server2.use.SSL: true
-  - config_type: hiveserver2-site
-    hive.server2.use.SSL: true
     hive.server2.keystore.path: $keystore
     hive.server2.keystore.password: $keystorepassword
 
