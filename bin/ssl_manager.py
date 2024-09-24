@@ -22,7 +22,7 @@ CA_CONF_DIR = "conf"
 ALL_SERVICES = ['HDFS', 'MRSHUFFLE', 'TEZ', 'HIVE', 'KAFKA', 'RANGER', 'SPARK2', 'SPARK3']
 RANGER = ['RANGERADMIN', 'RANGERPLUGINS']
 
-ALL_UI = ['HDFSUI', 'YARN', 'MAPREDUCE2UI', 'HBASE', 'OOZIE', 'AMBARI_INFRA', 'AMBARI_INFRA_SOLR', 'ATLAS', 'ZEPPELIN']
+ALL_UI = ['HDFSUI', 'YARN', 'MAPREDUCE2UI', 'HBASE', 'OOZIE', 'AMBARI_INFRA', 'AMBARI_INFRA_SOLR', 'ATLAS', 'ZEPPELIN', 'NIFI', 'NIFI_REGISTRY']
 AMBARI = ['AMBARIUI']
 #####
 
@@ -519,7 +519,7 @@ def main():
                                         "Available configs are: HDFS,MRSHUFFLE,TEZ,HIVE,KAFKA,SPARK,SPARK2,RANGERADMIN,RANGERPLUGINS")
     parser.add_option("--ui", dest="ui", help="Comma separated list of UI's for which SSL needs "
                                               "to be enabled. 'all' or comma seperated uis. "
-                                              "Available ui's are: HDFSUI,YARN,MAPREDUCE2UI,HBASE,OOZIE,AMBARI_INFRA,AMBARI_INFRA_SOLR,ATLAS,ZEPPELIN,STORM,AMBARI.")
+                                              "Available ui's are: HDFSUI,YARN,MAPREDUCE2UI,HBASE,OOZIE,AMBARI_INFRA,AMBARI_INFRA_SOLR,ATLAS,ZEPPELIN,STORM,AMBARI,NIFI,NIFI_REGISTRY.")
 
     # Ambari arguments
 
