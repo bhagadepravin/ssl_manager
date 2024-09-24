@@ -164,3 +164,11 @@ RANGERPLUGINS:
     xasecure.policymgr.clientssl.keystore.password: myKeyFilePassword
     xasecure.policymgr.clientssl.truststore: /usr/hdp/current/hadoop-client/conf/ranger-plugin-truststore.jks
     xasecure.policymgr.clientssl.truststore.password: changeit
+
+NIFI:
+  - config_type: nifi-ambari-ssl-config
+    nifi.ssl.isenabled: true
+
+NIFI_REGISTRY:
+  - config_type: nifi-registry-ambari-ssl-config
+    nifi.registry.ssl.isenabled: true    
