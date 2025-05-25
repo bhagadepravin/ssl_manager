@@ -96,6 +96,7 @@ AMBARI_INFRA_SOLR:
     infra_solr_keystore_password: $keystorepassword
     infra_solr_truststore_location: $truststore
     infra_solr_truststore_password: $truststorepassword
+    infra_solr_extra_java_opts: "-Dsolr.jetty.keystore.type=jks -Dsolr.jetty.truststore.type=jks"
 
 RANGERADMIN:
   - config_type: ranger-admin-site
