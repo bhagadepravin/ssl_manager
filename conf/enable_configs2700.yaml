@@ -124,6 +124,17 @@ RANGERADMIN:
     ranger.usersync.keystore.file: $keystore
     ranger.usersync.keystore.password: $keystorepassword
 
+RANGERKMS:
+  - config_type: ranger-kms-site
+    ranger.service.https.attrib.ssl.enabled: true
+    ranger.service.https.attrib.client.auth: false
+    ranger.service.https.attrib.keystore.file: $keystore
+    ranger.service.https.attrib.keystore.pass: $keystorepassword
+    ranger.service.https.attrib.keystore.keyalias: nifi-key
+
+  - config_type: kms-env
+    kms_port: 9393
+    
 RANGERPLUGINS:
   - config_type: ranger-hdfs-policymgr-ssl
     xasecure.policymgr.clientssl.keystore: $keystore
@@ -179,6 +190,12 @@ RANGERPLUGINS:
     xasecure.policymgr.clientssl.truststore: $truststore
     xasecure.policymgr.clientssl.truststore.password: $truststorepassword
 
+  - config_type: ranger-kms-policymgr-ssl
+    xasecure.policymgr.clientssl.keystore: $keystore
+    xasecure.policymgr.clientssl.keystore.password: $keystorepassword
+    xasecure.policymgr.clientssl.truststore: $truststore
+    xasecure.policymgr.clientssl.truststore.password: $truststorepassword
+    
 HBASE:
   - config_type: hbase-site
     hbase.ssl.enabled: true
