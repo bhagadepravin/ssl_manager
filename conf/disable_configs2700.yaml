@@ -67,6 +67,12 @@ RANGERADMIN:
     ranger.service.https.attrib.clientAuth: false
     ranger.service.https.attrib.ssl.enabled: false
 
+RANGERKMS:
+  - config_type: ranger-kms-site
+    ranger.service.https.attrib.ssl.enabled: false
+  - config_type: kms-env
+    kms_port: 9292
+    
 HBASE:
   - config_type: hbase-site
     hbase.ssl.enabled: false
