@@ -1,5 +1,5 @@
 
-##Tool to enable SSL for the services in HDP stack
+##Tool to enable SSL for the services in ODP stack
 
 Steps to run the SSL Manager: (on ambari-server node) 
 
