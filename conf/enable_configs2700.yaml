@@ -205,14 +205,6 @@ HBASE:
     ssl.server.keystore.password: $keystorepassword
     ssl.server.keystore.location: $keystore
 
-ATLAS:
-  - config_type: application-properties
-    atlas.enableTLS: true
-    keystore.file: $keystore
-    truststore.file: $truststore
-    client.auth.enabled: true
-    cert.stores.credential.provider.path: jceks://file//etc/security/certificates/ssl.jceks
-
 SPARK2:
   - config_type: yarn-site
     spark.authenticate: true
@@ -312,3 +304,235 @@ NIFI_REGISTRY:
     nifi.registry.security.keystorePasswd: $keystorepassword
     nifi.registry.security.keyPasswd: $keystorepassword
     nifi.registry.security.truststorePasswd: $truststorepassword   
+
+
+OZONE:
+  - config_type: ozone-env
+    ozone_datanode_ssl_enabled: true
+    ozone_manager_ssl_enabled: true
+    ozone_recon_ssl_enabled: true
+    ozone_s3g_ssl_enabled: true
+    ozone_scm_ssl_enabled: true
+    ozone__ssl_enabled: true
+    ozone__ssl_enabled: true
+
+  - config_type: ozone-ssl-client
+    ssl.client.truststore.location: $truststore
+    ssl.client.truststore.password: $truststorepassword
+    ssl.client.truststore.type: jks
+
+  - config_type: ssl-client-datanode
+    ssl.client.truststore.location: $truststore
+    ssl.client.truststore.password: $truststorepassword
+    ssl.client.truststore.type: jks
+
+  - config_type: ssl-client-om
+    ssl.client.truststore.location: $truststore
+    ssl.client.truststore.password: $truststorepassword
+    ssl.client.truststore.type: jks
+
+  - config_type: ssl-client-recon
+    ssl.client.truststore.location: $truststore
+    ssl.client.truststore.password: $truststorepassword
+    ssl.client.truststore.type: jks
+
+  - config_type: ssl-client-s3g
+    ssl.client.truststore.location: $truststore
+    ssl.client.truststore.password: $truststorepassword
+    ssl.client.truststore.type: jks
+
+  - config_type: ssl-client-scm
+    ssl.client.truststore.location: $truststore
+    ssl.client.truststore.password: $truststorepassword
+    ssl.client.truststore.type: jks
+
+  - config_type: ssl-server-datanode
+    ssl.client.truststore.location: $truststore
+    ssl.client.truststore.password: $truststorepassword
+    ssl.client.truststore.type: jks
+    ssl.client.keystore.location: $keystore
+    ssl.client.keystore.keypassword: $keystorepassword
+    ssl.client.keystore.password: $keystorepassword
+    ssl.client.keystore.type: jks
+
+  - config_type: ssl-server-om
+    ssl.client.truststore.location: $truststore
+    ssl.client.truststore.password: $truststorepassword
+    ssl.client.truststore.type: jks
+    ssl.client.keystore.location: $keystore
+    ssl.client.keystore.keypassword: $keystorepassword
+    ssl.client.keystore.password: $keystorepassword
+    ssl.client.keystore.type: jks
+
+  - config_type: ssl-server-recon
+    ssl.client.truststore.location: $truststore
+    ssl.client.truststore.password: $truststorepassword
+    ssl.client.truststore.type: jks
+    ssl.client.keystore.location: $keystore
+    ssl.client.keystore.keypassword: $keystorepassword
+    ssl.client.keystore.password: $keystorepassword
+    ssl.client.keystore.type: jks
+
+  - config_type: ssl-server-s3g
+    ssl.client.truststore.location: $truststore
+    ssl.client.truststore.password: $truststorepassword
+    ssl.client.truststore.type: jks
+    ssl.client.keystore.location: $keystore
+    ssl.client.keystore.keypassword: $keystorepassword
+    ssl.client.keystore.password: $keystorepassword
+    ssl.client.keystore.type: jks
+
+  - config_type: ssl-server-scm
+    ssl.client.truststore.location: $truststore
+    ssl.client.truststore.password: $truststorepassword
+    ssl.client.truststore.type: jks
+    ssl.client.keystore.location: $keystore
+    ssl.client.keystore.keypassword: $keystorepassword
+    ssl.client.keystore.password: $keystorepassword
+    ssl.client.keystore.type: jks
+
+  - config_type: ozone-site
+    ozone.https.client.keystore.resource: ssl-client.xml
+    ozone.https.server.keystore.resource: ssl-client.xml
+    ozone.http.policy: HTTPS_ONLY
+
+
+CRUISE_CONTROL:
+  - config_type: cruise-control
+    ssl.client.auth: none
+    ssl.enabled.protocols: TLSv1.2
+    ssl.endpoint.identification.algorithm: HTTPS
+    ssl.key.password: $keystorepassword
+    ssl.keystore.location: $keystore
+    ssl.keystore.password: $keystorepassword
+    ssl.truststore.location: $truststore
+    ssl.truststore.password: $truststorepassword
+    ssl.protocol: TLSv1.2
+    webserver.ssl.enable: true
+    webserver.ssl.key.password: $keystorepassword
+    webserver.ssl.keystore.location: $keystore
+    webserver.ssl.keystore.password: $keystorepassword
+    webserver.ssl.keystore.type: jks
+    webserver.ssl.protocol: TLSv1.2
+    webserver.ssl.truststore.location: $truststore
+    webserver.ssl.truststore.password: $truststorepassword
+
+CRUISE_CONTROL3:
+  - config_type: cruise-control3
+    ssl.client.auth: none
+    ssl.enabled.protocols: TLSv1.2
+    ssl.endpoint.identification.algorithm: HTTPS
+    ssl.key.password: $keystorepassword
+    ssl.keystore.location: $keystore
+    ssl.keystore.password: $keystorepassword
+    ssl.truststore.location: $truststore
+    ssl.truststore.password: $truststorepassword
+    ssl.protocol: TLSv1.2
+    webserver.ssl.enable: true
+    webserver.ssl.key.password: $keystorepassword
+    webserver.ssl.keystore.location: $keystore
+    webserver.ssl.keystore.password: $keystorepassword
+    webserver.ssl.keystore.type: jks
+    webserver.ssl.protocol: TLSv1.2
+    webserver.ssl.truststore.location: $truststore
+    webserver.ssl.truststore.password: $truststorepassword
+
+KAFKA3:
+  - config_type: kafka3-broker
+    ssl.keystore.location: $keystore
+    ssl.keystore.password: $keystorepassword
+    ssl.key.password: $keystorepassword
+    ssl.truststore.location: $truststore
+    ssl.truststore.password: $truststorepassword
+
+
+SPARK3:
+  - config_type: yarn-site
+    spark.authenticate: true
+
+  - config_type: spark3-defaults
+    spark.authenticate: true
+    spark.authenticate.enableSaslEncryption: true
+    spark.ssl.enabled: true
+    spark.ssl.keyPassword: $keystorepassword
+    spark.ssl.keyStore: $keystore
+    spark.ssl.keyStorePassword: $keystorepassword
+    spark.ssl.protocol: TLS
+    spark.ssl.trustStore: $truststore
+    spark.ssl.trustStorePassword: $truststorepassword
+    spark.ssl.historyServer.port: 18581
+    spark.ui.https.enabled: true    
+
+
+LIVY:
+  - config_type: livy-conf
+    livy.keystore: $keystore
+    livy.keystore.password: $keystorepassword
+    livy.key-password: $keystorepassword
+
+LIVY3:
+  - config_type: livy3-conf
+    livy.keystore: $keystore
+    livy.keystore.password: $keystorepassword
+    livy.key-password: $keystorepassword
+
+DRUID:
+  - config_type: druid-common
+    druid.client.https.protocol: TLSv1.2
+    druid.client.https.trustStorePassword: $truststorepassword
+    druid.client.https.trustStorePath: $truststore
+    druid.client.https.trustStoreType: jks
+    druid.server.https.certAlias: nifi-cert
+    druid.server.https.keyStorePassword: $keystorepassword
+    druid.server.https.keyStorePath: $keystore
+    druid.server.https.keyStoreType: jks
+    druid.enablePlaintextPort: false
+    druid.enableTlsPort: true
+
+IMPALA:
+  - config_type: impala-env
+    client_services_ssl_enabled: True
+    ssl_client_ca_certificate: $pemCert
+    ssl_private_key: $pemKey
+    webserver_private_key_file: $pemKey
+    ssl_server_certificate: $pemCert
+    webserver_certificate_file: $pemCert
+
+
+FLINK:
+  - config_type: flink-conf
+    historyserver.web.ssl.enabled: true
+    security.ssl.internal.enabled: true
+    security.ssl.internal.keystore: $keystore
+    security.ssl.internal.truststore: $truststore
+    security.ssl.internal.key-password: $keystorepassword
+    security.ssl.internal.keystore-password: $keystorepassword
+    security.ssl.internal.truststore-password: $truststorepassword
+    security.ssl.rest.enabled: true
+    security.ssl.rest.keystore: $keystore
+    security.ssl.rest.truststore: $truststore
+    security.ssl.rest.key-password: $keystorepassword
+    security.ssl.rest.keystore-password: $keystorepassword
+    security.ssl.rest.truststore-password: $truststorepassword
+
+  - config_type: flink-log4j
+    security.ssl.key-password: $keystorepassword
+
+
+AIRFLOW:
+  - config_type: airflow-webserver-site
+    enable_ssl: True
+    web_server_ssl_cert: $pemCert
+    web_server_ssl_key: $pemKey
+
+OOZIE:
+  - config_type: oozie-site
+    oozie.https.enabled: true
+    oozie.https.port: 11443
+    oozie.https.keystore.file: $keystore
+    oozie.https.keystore.pass: $keystorepassword
+    oozie.https.truststore.file: $truststore
+    oozie.https.truststore.pass: $truststorepassword
+    oozie.base.url: $oozieserver
+
+

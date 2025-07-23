@@ -19,10 +19,10 @@ CA_DIR = os.getcwd()
 CA_CONF_DIR = "conf"
 
 #####
-ALL_SERVICES = ['HDFS', 'MRSHUFFLE', 'TEZ', 'HIVE', 'KAFKA', 'RANGER', 'SPARK', 'SPARK2']
+ALL_SERVICES = ['HDFS', 'MRSHUFFLE', 'TEZ', 'HIVE', 'KAFKA', 'KAFKA3', 'RANGER', 'SPARK2', 'SPARK3','DRUID' ,'IMPALA' ,'OZONE' ,'CRUISE_CONTROL' ,'CRUISE_CONTROL3','FLINK','LIVY','LIVY3']
 RANGER = ['RANGERADMIN', 'RANGERPLUGINS']
 
-ALL_UI = ['HDFSUI', 'YARN', 'MAPREDUCE2UI', 'HBASE', 'OOZIE', 'AMBARI_INFRA', 'AMBARI_INFRA_SOLR', 'ATLAS', 'ZEPPELIN', 'STORM', 'NIFI', 'NIFI_REGISTRY']
+ALL_UI = ['HDFSUI', 'YARN', 'MAPREDUCE2UI', 'HBASE', 'OOZIE', 'AMBARI_INFRA', 'AMBARI_INFRA_SOLR', 'ATLAS', 'ZEPPELIN', 'NIFI', 'NIFI_REGISTRY','AIRFLOW','REGISTRY']
 AMBARI = ['AMBARIUI']
 #####
 
@@ -37,6 +37,10 @@ AMBARI_PEM = 'ambari-keystore.pem'
 AMBARI_CRT = 'ambari-keystore.crt'
 KEYSTORE_LOCATION = os.path.join(CERT_DIR, 'keystore.jks')
 TRUSTSTORE_LOCATION = os.path.join(CERT_DIR, 'truststore.jks')
+AMBARI_P12_LOCATION = os.path.join(CERT_DIR, 'ambari-keystore.p12')
+PEM_KEY_LOCATION = os.path.join(CERT_DIR, 'key.pem')
+PEM_CERT_LOCATION = os.path.join(CERT_DIR, 'cert.pem')
+
 keystorepassword = ""
 truststorepassword = ""
 accessor = ""
@@ -51,7 +55,7 @@ CA = \
     - Change the ownership to root:hadoop "chown -R root:hadoop /etc/security/certificates"
     """
 
-# #### wget -O /usr/hdp/2.6.4.0-91/oozie/libext/ext-2.2.zip http://tiny.cloudera.com/oozie-ext-2.2
+# #### wget -O /usr/odp/current/oozie-server/libext/ext-2.2.zip http://tiny.cloudera.com/oozie-ext-2.2
 OOZIE_UI = \
     """
     Select Oozie > Configs, then select Advanced oozie-env and set the following properties (update the <password> below):
@@ -78,25 +82,6 @@ export OOZIE_CLIENT_OPTS="${OOZIE_CLIENT_OPTS} -Doozie.connection.retry.count=5 
 
     Note: Make sure Ext JS library is Installed and UI is already enabled.
     """
-
-ATLAS_UI = \
-    """
-
-    Login to Atlas metadata server and create a .jceks file as shown below:
-    ----
-    cd /usr/hdp/current/atlas-server/bin
-    ./cputil.py
-    Please enter the full path to the credential provider:jceks://file//etc/security/certificates/ssl.jceks
-    Please enter the password value for keystore.password:<keypass>
-    Please enter the password value for keystore.password again:<keypass>
-    Please enter the password value for truststore.password:<keypass>
-    Please enter the password value for truststore.password again:<keypass>
-    Please enter the password value for password:<keypass>
-    Please enter the password value for password again:<keypass>
-    ----
-
-    """
-
 
 def generate_ca(properties, host, isoverwrite):
     """
@@ -150,7 +135,7 @@ def generate_ambari_specific(properties, host, outputdirectory):
     createp12 = [keytool, '-importkeystore', '-srckeystore', ambari_keystore,
                  '-destkeystore', ambari_p12, '-srcstoretype', 'jks',
                  '-deststoretype', 'pkcs12', '-srcstorepass', keystorepassword, '-deststorepass', keystorepassword]
-    createpem = ['openssl', 'pkcs12', '-in', ambari_p12, '-out', ambari_pem, '-passin',
+    createpem = ['openssl', 'pkcs12', '-legacy', '-in', ambari_p12, '-out', ambari_pem, '-passin',
                  'pass:'+keystorepassword, '-passout', 'pass:'+keystorepassword]
     createcrt = ['openssl', 'x509', '-in', ambari_pem, '-out', ambari_crt]
 
@@ -256,6 +241,12 @@ def update_configs_ambari(services, accessor, cluster, conf_file):
                     section[k] = KEYSTORE_LOCATION
                 elif section[k] == "$truststore":
                     section[k] = TRUSTSTORE_LOCATION
+                elif section[k] == "$ambari_p12":
+                    section[k] = AMBARI_P12_LOCATION
+                elif section[k] == "$pemKey":
+                    section[k] = PEM_KEY_LOCATION
+                elif section[k] == "$pemCert":
+                    section[k] = PEM_CERT_LOCATION
                 elif section[k] == "$keystorepassword":
                     section[k] = keystorepassword
                 elif section[k] == "$truststorepassword":
@@ -308,28 +299,164 @@ def disable_configs(service, accessor, cluster, conf_file):
     return
 
 
+
+def get_remote_os_type(ssh_key, userhost):
+    try:
+        command = "cat /etc/os-release | grep '^ID='"
+        ssh_command = ['ssh', '-o', 'StrictHostKeyChecking=no', '-i', ssh_key, userhost, command]
+        
+        # No need for shell=True when passing a list of arguments
+        result = subprocess.Popen(ssh_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, stderr = result.communicate()  # capture the output and error
+        
+        if result.returncode != 0:
+            logger.error("Failed to get OS type for host {0}: {1}".format(userhost, stderr))
+            return None
+        
+        if b'ubuntu' in stdout:
+            return 'ubuntu'
+        elif b'rhel' in stdout or b'centos' in stdout:
+            return 'rhel'
+        elif b'rocky' in stdout:
+            return 'rocky'
+        else:
+            logger.error("Unrecognized OS type from host {0}".format(userhost))
+            return None
+    
+    except Exception as e:
+        logger.error("Exception occurred: {0}".format(str(e)))
+        return None
+
+
+def execute_remote_commands(ssh_key, userhost, export_command, delete_command_cacerts, delete_command_ambari,import_command_cacerts, import_command_ambari, create_pkcs12, create_pem_key, create_pem_cert):
+    try:
+        # Execute export cert command
+        logger.info("Exporting cert from truststore on host {0}".format(userhost))
+        subprocess.Popen(
+            "ssh -o StrictHostKeyChecking=no -i {0} {1} '{2}'".format(ssh_key, userhost, export_command), 
+            shell=True
+        ).communicate()
+
+
+        # Delete existing cert in cacerts if it exists
+        logger.info("Deleting existing cert from cacerts on host {0}".format(userhost))
+        subprocess.Popen(
+            "ssh -o StrictHostKeyChecking=no -i {0} {1} '{2}'".format(ssh_key, userhost, delete_command_cacerts), 
+            shell=True
+        ).communicate()
+
+        # Delete existing cert in Ambari truststore if it exists
+        logger.info("Deleting existing cert from Ambari truststore on host {0}".format(userhost))
+        subprocess.Popen(
+            "ssh -o StrictHostKeyChecking=no -i {0} {1} '{2}'".format(ssh_key, userhost, delete_command_ambari), 
+            shell=True
+        ).communicate()
+
+        # Execute import cert command for cacerts
+        logger.info("Importing cert into cacerts on host {0}".format(userhost))
+        subprocess.Popen(
+            "ssh -o StrictHostKeyChecking=no -i {0} {1} '{2}'".format(ssh_key, userhost, import_command_cacerts), 
+            shell=True
+        ).communicate()
+
+        # Execute import cert command for Ambari truststore
+        logger.info("Importing cert into Ambari truststore on host {0}".format(userhost))
+        subprocess.Popen(
+            "ssh -o StrictHostKeyChecking=no -i {0} {1} '{2}'".format(ssh_key, userhost, import_command_ambari), 
+            shell=True
+        ).communicate()
+
+
+        # Create pkcs12 file to extract key and cert for impala, airflow ssl
+        logger.info("Create pkcs12 file on host {0}".format(userhost))
+        subprocess.Popen(
+            "ssh -o StrictHostKeyChecking=no -i {0} {1} '{2}'".format(ssh_key, userhost, create_pkcs12),
+            shell=True
+        ).communicate()
+
+
+        # Create pem key file for SSL enablement
+        logger.info("Create pem key file on host {0}".format(userhost))
+        subprocess.Popen(
+            "ssh -o StrictHostKeyChecking=no -i {0} {1} '{2}'".format(ssh_key, userhost, create_pem_key),
+            shell=True
+        ).communicate()
+
+        
+        # Create pem cert file for SSL enablement
+        logger.info("Create pem cert file on host {0}".format(userhost))
+        subprocess.Popen(
+            "ssh -o StrictHostKeyChecking=no -i {0} {1} '{2}'".format(ssh_key, userhost, create_pem_cert),
+            shell=True
+        ).communicate()
+
+    except Exception as e:
+        logger.error("Failed to execute commands on host {0}: {1}".format(userhost, str(e)))
+
+
+
 def copy_certs(properties, ssh_key, scpusername, ownership):
     opdir = os.path.abspath(read_conf_file(properties, "caprops", "outputDirectory"))
     host_list = read_conf_file(properties, "caprops", "hostnames")
     ssh_key = os.path.expanduser(ssh_key)
+
     for host in host_list.split(','):
         logger.info(host)
-        source = os.path.join(opdir, host)+'/*'
+        source = os.path.join(opdir, host) + '/*'
         dest = scpusername + '@' + host + ':' + CERT_DIR + '/'
         userhost = scpusername + '@' + host
-        scp_command = "scp -o StrictHostKeyChecking=no -i " + ssh_key + " " + source + " "+dest
+        scp_command = "scp -o StrictHostKeyChecking=no -i " + ssh_key + " " + source + " " + dest
+
         logger.info("Creating cert dir {0} in host {1}".format(CERT_DIR, host))
-        subprocess.Popen(['ssh', '-o', 'StrictHostKeyChecking=no', '-i', ssh_key, userhost, 'mkdir', '-p',
-                          CERT_DIR]).communicate()
+        subprocess.Popen(['ssh', '-o', 'StrictHostKeyChecking=no', '-i', ssh_key, userhost, 'mkdir', '-p', CERT_DIR]).communicate()
+
         logger.info("Copying certs to host {0}".format(host))
         subprocess.Popen(scp_command, shell=True).communicate()
+
         logger.info("Changing the permissions..")
-        subprocess.Popen(['ssh', '-o', 'StrictHostKeyChecking=no', '-i', ssh_key, userhost, 'chmod', '-R', '750',
-                          CERT_DIR]).communicate()
+        subprocess.Popen(['ssh', '-o', 'StrictHostKeyChecking=no', '-i', ssh_key, userhost, 'chmod', '-R', '750', CERT_DIR]).communicate()
+
         logger.info("Changing the ownership of certificates..")
-        subprocess.Popen(['ssh', '-o', 'StrictHostKeyChecking=no', '-i', ssh_key, userhost, 'chown', '-R', ownership,
-                         CERT_DIR]).communicate()
+        subprocess.Popen(['ssh', '-o', 'StrictHostKeyChecking=no', '-i', ssh_key, userhost, 'chown', '-R', ownership, CERT_DIR]).communicate()
+
+        create_pkcs12 = "keytool -importkeystore -srckeystore " + CERT_DIR + '/' + "keystore.jks -destkeystore " + CERT_DIR + '/' + "keystore.p12 -srcstoretype jks -deststoretype pkcs12 -srcstorepass " + keystorepassword + " -deststorepass " + keystorepassword + " -destkeypass " + keystorepassword + " -alias nifi-cert"
+
+        create_pem_key = "openssl pkcs12 -legacy -in  " + CERT_DIR + '/' + "keystore.p12  -nocerts -out  " + CERT_DIR + '/' + "key.pem -nodes -passin pass:" + keystorepassword + " && chmod o+rwx " + CERT_DIR + '/' + "key.pem"
+
+        create_pem_cert = "openssl pkcs12 -legacy -in  " + CERT_DIR + '/' + "keystore.p12  -nokeys -out  " + CERT_DIR + '/' + "cert.pem -passin pass:" + keystorepassword  + " && chmod o+rwx " + CERT_DIR + '/' + "cert.pem"
+
+        # Determine the OS type dynamically
+        os_type = get_remote_os_type(ssh_key, userhost)
+
+
+        if os_type:
+            if os_type == 'ubuntu':
+                logger.info("Running keytool commands for Ubuntu...")
+                export_command = "keytool -exportcert -alias nifi-cert -keystore " + CERT_DIR + '/' + "truststore.jks -file /tmp/mycert.crt -storepass " + truststorepassword + " -noprompt"
+                delete_command_cacerts = "keytool -delete -alias nifi-cert -keystore /etc/ssl/certs/java/cacerts -storepass changeit"
+                delete_command_ambari = "keytool -delete -alias nifi-cert -keystore /etc/ambari-server/conf/truststore.jks -storepass changeit"
+
+                import_command_cacerts = "keytool -importcert -alias nifi-cert -file /tmp/mycert.crt -keystore /etc/ssl/certs/java/cacerts -storepass changeit -noprompt"
+
+                import_command_ambari = "keytool -importcert -alias nifi-cert -file /tmp/mycert.crt -keystore /etc/ambari-server/conf/truststore.jks -storepass changeit -noprompt"
+
+            elif os_type in ['rhel', 'centos', 'rocky']:
+                logger.info("Running keytool commands for Rocky Linux or RHEL...")
+                export_command = "keytool -exportcert -alias nifi-cert -keystore /etc/security/certificates/truststore.jks -file /tmp/mycert.crt -storepass Hadoop@123 -noprompt"
+                delete_command_cacerts = "keytool -delete -alias nifi-cert -keystore /etc/pki/ca-trust/extracted/java/cacerts -storepass changeit"
+                delete_command_ambari = "keytool -delete -alias nifi-cert -keystore /etc/ambari-server/conf/truststore.jks -storepass changeit"
+
+                import_command_cacerts = "keytool -importcert -alias nifi-cert -file /tmp/mycert.crt -keystore /etc/pki/ca-trust/extracted/java/cacerts -storepass changeit -noprompt"
+                import_command_ambari = "keytool -importcert -alias nifi-cert -file /tmp/mycert.crt -keystore /etc/ambari-server/conf/truststore.jks -storepass changeit -noprompt"
+
+            # Execute the remote commands
+            execute_remote_commands(ssh_key, userhost, export_command, delete_command_cacerts, delete_command_ambari, import_command_cacerts, import_command_ambari, create_pkcs12, create_pem_key, create_pem_cert)
+        else:
+            logger.error("Could not determine OS type for host {0}. Skipping keytool operations.".format(userhost))
+
+
     return
+
 
 
 def read_ca_conf_file(properties, section):
@@ -433,6 +560,7 @@ def parse_service(services, accessor, cluster, conf_file):
                 logger.info("Enabling SSL for {0}".format(i))
                 update_configs_ambari(i.upper(), accessor, cluster, conf_file)
         else:
+            #if u_name == '':
             update_configs_ambari(s_name, accessor, cluster, conf_file)
     return
 
@@ -504,7 +632,7 @@ def is_hadoop_required(a, b):
 
 def enable_ambari_ui():
     ambari_ui = ['ambari-server', 'setup-security', '--security-option=setup-https', '--api-ssl=true',
-                 '--api-ssl-port=8443', '--import-cert-path='+os.path.join(CERT_DIR, AMBARI_CRT),
+                 '--api-ssl-port=8446', '--import-cert-path='+os.path.join(CERT_DIR, AMBARI_CRT),
                  '--import-key-path='+os.path.join(CERT_DIR, AMBARI_PEM), '--pem-password='+keystorepassword]
     return ambari_ui
 
@@ -636,6 +764,12 @@ def main():
     logger.debug("UI's ssl_manager can configure are: {0}".format(ALL_UI + AMBARI))
     logger.debug("Services ssl_manager can configure are: {0}".format(ALL_SERVICES + RANGER))
 
+
+    logger.info("Installed Services/UI's on cluster are: {0}".format(installed_services))
+    logger.info("UI's ssl_manager can configure are: {0}".format(ALL_UI + AMBARI))
+    logger.info("Services ssl_manager can configure are: {0}".format(ALL_SERVICES + RANGER))
+
+
     # To Prepare list of installed ranger plugins
     ranger_ui_to_be_considered = list(set(ALL_UI + AMBARI).intersection(installed_services))
     ranger_services_to_be_considered = list(set(ALL_SERVICES + RANGER).intersection(installed_services))
@@ -644,11 +778,11 @@ def main():
         if service is not None:
             if service.upper() != "ALL":
                 services = map(str.upper, service.split(','))
-                logger.debug("Services passed through cli are: {0}".format(services))
+                logger.info("Services passed through cli are: {0}".format(services))
                 services_to_be_considered = list(
                     set(ALL_SERVICES+RANGER).intersection(installed_services).intersection(services))
             elif service.upper() == "ALL":
-                logger.debug("Services passed through cli are: {0}".format(service))
+                logger.info("Services passed through cli are: {0}".format(service))
                 services_to_be_considered = list(set(ALL_SERVICES+RANGER).intersection(installed_services))
 
             if is_hadoop_required(services_to_be_considered, IS_HADOOP) is True:
